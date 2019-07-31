@@ -1,45 +1,49 @@
 import express, { Application, response } from "express";
 import cookieParse from "cookie-parser";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 import loggerMiddleware from "./helpers/middlewares/logger-middleware";
 import errorMiddleware from "./helpers/middlewares/error-middleware";
 
+var whitelist = ["http://localhost:3000"];
+
 class App {
-  public app: Application;
-  public port: number;
-  public host: string;
+	public app: Application;
+	public port: number;
+	public host: string;
 
-  constructor(controllers: any, port: number, host: string) {
-    this.app = express();
-    this.port = port;
-    this.host = host;
-    this.initializeMiddlewares();
-    this.initializeControllers(controllers);
-    this.initializeErrorHandling();
-  }
+	constructor(controllers: any, port: number, host: string) {
+		this.app = express();
+		this.port = port;
+		this.host = host;
+		this.initializeMiddlewares();
+		this.initializeControllers(controllers);
+		this.initializeErrorHandling();
+	}
 
-  private initializeMiddlewares(): void {
-    this.app.use(loggerMiddleware);
-    this.app.use(bodyParser.json());
-    this.app.use(cookieParse());
-  }
+	private initializeMiddlewares(): void {
+		this.app.use(cors());
+		this.app.use(loggerMiddleware);
+		this.app.use(bodyParser.json());
+		this.app.use(cookieParse());
+	}
 
-  private initializeErrorHandling(): void {
-    this.app.use(errorMiddleware);
-  }
+	private initializeErrorHandling(): void {
+		this.app.use(errorMiddleware);
+	}
 
-  private initializeControllers(controllers: any): void {
-    controllers.forEach((controller: any) => {
-      this.app.use("/", controller.router);
-    });
-  }
+	private initializeControllers(controllers: any): void {
+		controllers.forEach((controller: any) => {
+			this.app.use("/", controller.router);
+		});
+	}
 
-  public listen() {
-    this.app.listen(this.port, this.host, () => {
-      console.log(`API * Hubspot * listening on ${this.host}:${this.port}`);
-    });
-  }
+	public listen() {
+		this.app.listen(this.port, this.host, () => {
+			console.log(`API * Hubspot * listening on ${this.host}:${this.port}`);
+		});
+	}
 }
 
 export default App;
